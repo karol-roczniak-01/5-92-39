@@ -9,17 +9,6 @@
     <link rel="apple-touch-icon" href="/logo192.png" />
     <link rel="manifest" href="/manifest.json" />
     <title>5-92-39</title>
-    <script>
-      const THEME_COLORS = { 
-        dark: '#1d1715', 
-        blueprint: '#003f71', 
-        noir: '#060606', 
-        chalk: '#f2f2f2' 
-      }
-      const t = document.cookie.split('; ').find(r => r.startsWith('theme='))?.split('=')[1] ?? 'dark'
-      document.documentElement.classList.add(t)
-      document.querySelector('meta[name="theme-color"]').setAttribute('content', THEME_COLORS[t] ?? THEME_COLORS.dark)
-    </script>
   </head>
   <body>
     <div id="app"></div>

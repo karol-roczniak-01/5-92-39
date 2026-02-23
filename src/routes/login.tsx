@@ -1,14 +1,12 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
-import { Loader as AlertCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from './-auth'
 import { Input } from '@/components/Input'
 import { Button } from '@/components/Button'
 import Loader from '@/components/Loader'
-import Layout from '@/components/Layout'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
 import useMobile from '@/hooks/useMobile'
+import Page from '@/components/Page'
 
 export const Route = createFileRoute('/login')({
   pendingComponent: () => <Loader />,
@@ -41,45 +39,36 @@ function RouteComponent() {
   })
 
   return (
-    <Layout>
-      <Card
-        className="h-80"
-        asForm
+    <Page header="Log in to your 19-18-8-103 account">
+      {apiError && (
+        <p>{apiError}</p>
+      )}
+      <form
         onSubmit={(e) => {
           e.preventDefault()
           e.stopPropagation()
           form.handleSubmit()
         }}
+        className='flex flex-col gap-2'
       >
-        <CardHeader>
-          <p>Login to your account</p>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2">
-          {/* API Error Message */}
-          {apiError && (
-            <div className="flex items-center gap-2 p-2 border text-sm">
-              <AlertCircle size={16} className="shrink-0" />
-              <p>{apiError}</p>
-            </div>
-          )}
-
-          {/* Email */}
-          <form.Field
-            name="email"
-            validators={{
-              onSubmit: ({ value }) => {
-                if (!value) return 'Email is required'
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                  return 'Invalid email format'
-                }
-                return undefined
-              },
-            }}
-          >
-            {(field) => (
-              <div className="space-y-1">
-                <label htmlFor={field.name} className="block text-sm">
-                  Email
+        {/* Email */}
+        <form.Field
+          name="email"
+          validators={{
+          onSubmit: ({ value }) => {
+              if (!value) return 'Email is required'
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                return 'Invalid email format'
+              }
+              return undefined
+            },
+          }}
+        >
+          {(field) => (
+            <div className="flex flex-col">
+              <div className='flex gap-2 items-center'>
+                <label>
+                  [Email]
                 </label>
                 <Input
                   id={field.name}
@@ -92,30 +81,31 @@ function RouteComponent() {
                   placeholder="email@example.com"
                   autoFocus={!isMobile}
                 />
-                {field.state.meta.errors.length > 0 && (
-                  <div className="flex items-center gap-1 text-sm text-primary/70">
-                    <AlertCircle size={14} className="shrink-0" />
-                    <p>{field.state.meta.errors[0]}</p>
-                  </div>
-                )}
               </div>
-            )}
-          </form.Field>
+              {field.state.meta.errors.length > 0 && (
+                <p className='opacity-70'>
+                  ! {field.state.meta.errors[0]}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
 
-          {/* Password */}
-          <form.Field
-            name="password"
-            validators={{
-              onSubmit: ({ value }) => {
-                if (!value) return 'Password is required'
-                return undefined
-              },
-            }}
-          >
-            {(field) => (
-              <div className="space-y-1">
-                <label htmlFor={field.name} className="block text-sm">
-                  Password
+        {/* Password */}
+        <form.Field
+          name="password"
+          validators={{
+            onSubmit: ({ value }) => {
+              if (!value) return 'Password is required'
+              return undefined
+            },
+          }}
+        >
+          {(field) => (
+            <div className="flex flex-col">
+              <div className='flex gap-2 items-center'>
+                <label>
+                  [Password]
                 </label>
                 <Input
                   id={field.name}
@@ -127,18 +117,17 @@ function RouteComponent() {
                   onChange={(e) => field.handleChange(e.target.value)}
                   placeholder="••••••••"
                 />
-                {field.state.meta.errors.length > 0 && (
-                  <div className="flex items-center gap-1 text-sm text-primary/70">
-                    <AlertCircle size={14} className="shrink-0" />
-                    <p>{field.state.meta.errors[0]}</p>
-                  </div>
-                )}
               </div>
-            )}
-          </form.Field>
-        </CardContent>
+              {field.state.meta.errors.length > 0 && (
+                <p className='opacity-70'>
+                  ! {field.state.meta.errors[0]}
+                </p>
+              )}
+            </div>
+          )}
+        </form.Field>
 
-        <CardFooter>
+        <div className='flex pt-2'>
           <form.Subscribe selector={(state) => state.isSubmitting}>
             {(isSubmitting) => (
               <Button type="submit" disabled={isSubmitting} className="w-full">
@@ -146,8 +135,8 @@ function RouteComponent() {
               </Button>
             )}
           </form.Subscribe>
-        </CardFooter>
-      </Card>
-    </Layout>
+        </div>
+      </form>
+    </Page>
   )
 }

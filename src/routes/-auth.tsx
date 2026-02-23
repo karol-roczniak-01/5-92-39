@@ -14,7 +14,7 @@ import type {
   AuthContext,
   LoginCredentials,
   User,
-} from '../utils/types'
+} from '../types'
 import Loader from '@/components/Loader'
 
 const Auth = createContext<AuthContext | null>(null)

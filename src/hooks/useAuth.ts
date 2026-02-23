@@ -1,4 +1,4 @@
-import type { LoginCredentials, User } from '../utils/types'
+import type { LoginCredentials, User } from '../types'
 
 const API_BASE = '/api/users'
 

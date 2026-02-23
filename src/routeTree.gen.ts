@@ -12,10 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedSupplyIndexRouteImport } from './routes/_authenticated/supply/index'
-import { Route as AuthenticatedDemandIndexRouteImport } from './routes/_authenticated/demand/index'
-import { Route as AuthenticatedSupplyNewRouteImport } from './routes/_authenticated/supply/new'
-import { Route as AuthenticatedDemandNewRouteImport } from './routes/_authenticated/demand/new'
+import { Route as AuthenticatedNewDemandRouteImport } from './routes/_authenticated/new-demand'
+import { Route as AuthenticatedMyDemandsRouteImport } from './routes/_authenticated/my-demands'
+import { Route as AuthenticatedFindAMatchRouteImport } from './routes/_authenticated/find-a-match'
+import { Route as AuthenticatedAppliedRouteImport } from './routes/_authenticated/applied'
 import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authenticated/demand.$demandId'
 
 const LoginRoute = LoginRouteImport.update({
@@ -32,26 +32,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSupplyIndexRoute =
-  AuthenticatedSupplyIndexRouteImport.update({
-    id: '/supply/',
-    path: '/supply/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedDemandIndexRoute =
-  AuthenticatedDemandIndexRouteImport.update({
-    id: '/demand/',
-    path: '/demand/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSupplyNewRoute = AuthenticatedSupplyNewRouteImport.update({
-  id: '/supply/new',
-  path: '/supply/new',
+const AuthenticatedNewDemandRoute = AuthenticatedNewDemandRouteImport.update({
+  id: '/new-demand',
+  path: '/new-demand',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedDemandNewRoute = AuthenticatedDemandNewRouteImport.update({
-  id: '/demand/new',
-  path: '/demand/new',
+const AuthenticatedMyDemandsRoute = AuthenticatedMyDemandsRouteImport.update({
+  id: '/my-demands',
+  path: '/my-demands',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFindAMatchRoute = AuthenticatedFindAMatchRouteImport.update({
+  id: '/find-a-match',
+  path: '/find-a-match',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAppliedRoute = AuthenticatedAppliedRouteImport.update({
+  id: '/applied',
+  path: '/applied',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDemandDemandIdRoute =
@@ -64,61 +62,61 @@ const AuthenticatedDemandDemandIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/applied': typeof AuthenticatedAppliedRoute
+  '/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/my-demands': typeof AuthenticatedMyDemandsRoute
+  '/new-demand': typeof AuthenticatedNewDemandRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
-  '/demand/new': typeof AuthenticatedDemandNewRoute
-  '/supply/new': typeof AuthenticatedSupplyNewRoute
-  '/demand/': typeof AuthenticatedDemandIndexRoute
-  '/supply/': typeof AuthenticatedSupplyIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
+  '/applied': typeof AuthenticatedAppliedRoute
+  '/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/my-demands': typeof AuthenticatedMyDemandsRoute
+  '/new-demand': typeof AuthenticatedNewDemandRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
-  '/demand/new': typeof AuthenticatedDemandNewRoute
-  '/supply/new': typeof AuthenticatedSupplyNewRoute
-  '/demand': typeof AuthenticatedDemandIndexRoute
-  '/supply': typeof AuthenticatedSupplyIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/applied': typeof AuthenticatedAppliedRoute
+  '/_authenticated/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/_authenticated/my-demands': typeof AuthenticatedMyDemandsRoute
+  '/_authenticated/new-demand': typeof AuthenticatedNewDemandRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
-  '/_authenticated/demand/new': typeof AuthenticatedDemandNewRoute
-  '/_authenticated/supply/new': typeof AuthenticatedSupplyNewRoute
-  '/_authenticated/demand/': typeof AuthenticatedDemandIndexRoute
-  '/_authenticated/supply/': typeof AuthenticatedSupplyIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
+    | '/applied'
+    | '/find-a-match'
+    | '/my-demands'
+    | '/new-demand'
     | '/demand/$demandId'
-    | '/demand/new'
-    | '/supply/new'
-    | '/demand/'
-    | '/supply/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/applied'
+    | '/find-a-match'
+    | '/my-demands'
+    | '/new-demand'
     | '/demand/$demandId'
-    | '/demand/new'
-    | '/supply/new'
-    | '/demand'
-    | '/supply'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/applied'
+    | '/_authenticated/find-a-match'
+    | '/_authenticated/my-demands'
+    | '/_authenticated/new-demand'
     | '/_authenticated/demand/$demandId'
-    | '/_authenticated/demand/new'
-    | '/_authenticated/supply/new'
-    | '/_authenticated/demand/'
-    | '/_authenticated/supply/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,32 +148,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/supply/': {
-      id: '/_authenticated/supply/'
-      path: '/supply'
-      fullPath: '/supply/'
-      preLoaderRoute: typeof AuthenticatedSupplyIndexRouteImport
+    '/_authenticated/new-demand': {
+      id: '/_authenticated/new-demand'
+      path: '/new-demand'
+      fullPath: '/new-demand'
+      preLoaderRoute: typeof AuthenticatedNewDemandRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/demand/': {
-      id: '/_authenticated/demand/'
-      path: '/demand'
-      fullPath: '/demand/'
-      preLoaderRoute: typeof AuthenticatedDemandIndexRouteImport
+    '/_authenticated/my-demands': {
+      id: '/_authenticated/my-demands'
+      path: '/my-demands'
+      fullPath: '/my-demands'
+      preLoaderRoute: typeof AuthenticatedMyDemandsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/supply/new': {
-      id: '/_authenticated/supply/new'
-      path: '/supply/new'
-      fullPath: '/supply/new'
-      preLoaderRoute: typeof AuthenticatedSupplyNewRouteImport
+    '/_authenticated/find-a-match': {
+      id: '/_authenticated/find-a-match'
+      path: '/find-a-match'
+      fullPath: '/find-a-match'
+      preLoaderRoute: typeof AuthenticatedFindAMatchRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/demand/new': {
-      id: '/_authenticated/demand/new'
-      path: '/demand/new'
-      fullPath: '/demand/new'
-      preLoaderRoute: typeof AuthenticatedDemandNewRouteImport
+    '/_authenticated/applied': {
+      id: '/_authenticated/applied'
+      path: '/applied'
+      fullPath: '/applied'
+      preLoaderRoute: typeof AuthenticatedAppliedRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/demand/$demandId': {
@@ -189,19 +187,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAppliedRoute: typeof AuthenticatedAppliedRoute
+  AuthenticatedFindAMatchRoute: typeof AuthenticatedFindAMatchRoute
+  AuthenticatedMyDemandsRoute: typeof AuthenticatedMyDemandsRoute
+  AuthenticatedNewDemandRoute: typeof AuthenticatedNewDemandRoute
   AuthenticatedDemandDemandIdRoute: typeof AuthenticatedDemandDemandIdRoute
-  AuthenticatedDemandNewRoute: typeof AuthenticatedDemandNewRoute
-  AuthenticatedSupplyNewRoute: typeof AuthenticatedSupplyNewRoute
-  AuthenticatedDemandIndexRoute: typeof AuthenticatedDemandIndexRoute
-  AuthenticatedSupplyIndexRoute: typeof AuthenticatedSupplyIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAppliedRoute: AuthenticatedAppliedRoute,
+  AuthenticatedFindAMatchRoute: AuthenticatedFindAMatchRoute,
+  AuthenticatedMyDemandsRoute: AuthenticatedMyDemandsRoute,
+  AuthenticatedNewDemandRoute: AuthenticatedNewDemandRoute,
   AuthenticatedDemandDemandIdRoute: AuthenticatedDemandDemandIdRoute,
-  AuthenticatedDemandNewRoute: AuthenticatedDemandNewRoute,
-  AuthenticatedSupplyNewRoute: AuthenticatedSupplyNewRoute,
-  AuthenticatedDemandIndexRoute: AuthenticatedDemandIndexRoute,
-  AuthenticatedSupplyIndexRoute: AuthenticatedSupplyIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

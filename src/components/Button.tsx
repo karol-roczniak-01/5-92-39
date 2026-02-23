@@ -12,7 +12,7 @@ function Button({ className = '', onClick, disabled, ...props }: ButtonProps) {
     <button
       ref={ref}
       className={twMerge(
-        'h-8 px-2 flex gap-2 border border-primary items-center justify-center cursor-pointer outline-none',
+        'flex gap-2 border border-primary border-dashed cursor-pointer items-center justify-center outline-none',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         'hover:bg-primary hover:text-background hover:border-primary',
         className,

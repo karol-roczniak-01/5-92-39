@@ -1,135 +1,55 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
-import { Card, CardContent, CardHeader } from './Card'
-import { Input } from './Input'
-import { Button } from './Button'
-import type {LucideIcon} from 'lucide-react';
 import useMobile from '@/hooks/useMobile'
 
 interface MenuItem {
   label: string
-  path?: string
-  icon?: LucideIcon
   onSelect?: () => void
 }
 
 interface MenuProps {
   options: Array<MenuItem>
   onSelect?: (option: MenuItem, index: number) => void
-  searchable?: boolean
-  searchPlaceholder?: string
-  title?: string
-  description?: string
 }
 
-const Menu: React.FC<MenuProps> = ({
-  options,
-  onSelect,
-  searchable,
-  searchPlaceholder,
-  title,
-  description
-}) => {
+const Menu: React.FC<MenuProps> = ({ options, onSelect }) => {
   const isMobile = useMobile()
   const [selected, setSelected] = useState(0)
-  const [searchQuery, setSearchQuery] = useState('')
-
-  const filteredOptions = useMemo(() => {
-    if (!searchable || !searchQuery.trim()) {
-      return options
-    }
-    const query = searchQuery.toLowerCase()
-    return options.filter((option) =>
-      option.label.toLowerCase().includes(query),
-    )
-  }, [options, searchQuery, searchable])
-
-  // Reset selection when filtered options change
-  useMemo(() => {
-    setSelected(0)
-  }, [filteredOptions])
 
   const handleSelect = (index: number) => {
-    const current = filteredOptions[index]
-    const originalIndex = options.indexOf(current)
+    const current = options[index]
     current.onSelect?.()
-    onSelect?.(current, originalIndex)
+    onSelect?.(current, index)
   }
 
-  useHotkeys(
-    'down',
-    (e) => {
-      e.preventDefault()
-      setSelected((prev) => (prev + 1) % filteredOptions.length)
-    },
-    { enableOnFormTags: true },
-  )
+  useHotkeys('down', (e) => {
+    e.preventDefault()
+    setSelected((prev) => (prev + 1) % options.length)
+  })
 
-  useHotkeys(
-    'up',
-    (e) => {
-      e.preventDefault()
-      setSelected(
-        (prev) => (prev - 1 + filteredOptions.length) % filteredOptions.length,
-      )
-    },
-    { enableOnFormTags: true },
-  )
+  useHotkeys('up', (e) => {
+    e.preventDefault()
+    setSelected((prev) => (prev - 1 + options.length) % options.length)
+  })
 
-  useHotkeys(
-    'enter',
-    (e) => {
-      e.preventDefault()
-      if (filteredOptions.length > 0) {
-        handleSelect(selected)
-      }
-    },
-    { enableOnFormTags: true },
-  )
+  useHotkeys('enter', (e) => {
+    e.preventDefault()
+    if (options.length > 0) handleSelect(selected)
+  })
 
   return (
-    <Card>
-      {(searchable || title || description) && (
-        <CardHeader className='gap-2 flex flex-col'>
-          {(title || description) && (
-            <div className='flex flex-col gap-1'>
-              <p>{title}</p>
-              <p className='text-sm opacity-70'>{description}</p>
-            </div>
-          )}
-          {searchable && (
-            <Input
-              autoFocus={!isMobile}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={searchPlaceholder}
-            />
-          )}
-        </CardHeader>
-      )}
-      <CardContent className="space-y-2 text-center">
-        {filteredOptions.length === 0 ? (
-          <></>
-        ) : (
-          filteredOptions.map((option, index) => {
-            const Icon = option.icon
-            return (
-              <Button
-                key={index}
-                className={`w-full ${
-                  selected === index ? 'bg-primary text-background' : ''
-                }`}
-                onMouseEnter={() => setSelected(index)}
-                onClick={() => handleSelect(index)}
-              >
-                {Icon && <Icon size={16} />}
-                {option.label}
-              </Button>
-            )
-          })
-        )}
-      </CardContent>
-    </Card>
+    <ul>
+      {options.map((option, index) => (
+        <li
+          key={index}
+          onMouseEnter={() => !isMobile && setSelected(index)}
+          onClick={() => handleSelect(index)}
+          className={`${!isMobile && selected === index ? 'bg-primary text-background cursor-default' : ''}`}
+        >
+          {option.label}
+        </li>
+      ))}
+    </ul>
   )
 }
 

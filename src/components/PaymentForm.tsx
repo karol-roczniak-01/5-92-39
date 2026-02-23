@@ -9,44 +9,29 @@ interface PaymentFormProps {
   disabled?: boolean
 }
 
-export function PaymentForm({
-  clientSecret,
-  onSuccess,
-  onError,
-  disabled,
-}: PaymentFormProps) {
+export function PaymentForm({ clientSecret, onSuccess, onError, disabled }: PaymentFormProps) {
   const stripe = useStripe()
   const elements = useElements()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [cardComplete, setCardComplete] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault()
-
-    if (!stripe || !elements) {
-      return
-    }
+    if (!stripe || !elements) return
 
     setIsProcessing(true)
 
     try {
       const cardElement = elements.getElement(CardElement)
+      if (!cardElement) throw new Error('Card element not found')
 
-      if (!cardElement) {
-        throw new Error('Card element not found')
-      }
-
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        {
-          payment_method: {
-            card: cardElement,
-          },
-        },
-      )
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElement },
+      })
 
       if (error) {
         onError(error.message || 'Payment failed')
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+      } else if (paymentIntent?.status === 'succeeded') {
         onSuccess(paymentIntent.id)
       }
     } catch (err) {
@@ -57,25 +42,30 @@ export function PaymentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="text-sm mb-2 block">Card Details</label>
-        <div className="border border-primary p-2 bg-background">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+      <div className="flex gap-2 items-center">
+        <label className="shrink-0">[card]</label>
+        <div className="flex-1">
           <CardElement
+            onChange={(e) => setCardComplete(e.complete)}
             options={{
               style: {
                 base: {
-                  fontSize: '14px',
-                  color: '#ff8904',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontSize: '16px',
+                  color: '#FF8C00',
+                  fontFamily: '"Inconsolata", monospace',
+                  fontSmoothing: 'antialiased',
+                  iconColor: '#FF8C00',
                   '::placeholder': {
-                    color: '#ff8904',
+                    color: 'rgba(255, 140, 0, 0.7)',
                   },
-                  iconColor: '#ff8904',
+                  ':-webkit-autofill': {
+                    color: '#FF8C00',
+                  },
                 },
                 invalid: {
-                  color: 'hsl(var(--destructive))',
-                  iconColor: 'hsl(var(--destructive))',
+                  color: 'rgba(255, 140, 0, 0.5)',
+                  iconColor: 'rgba(255, 140, 0, 0.5)',
                 },
               },
               hidePostalCode: true,
@@ -84,15 +74,13 @@ export function PaymentForm({
         </div>
       </div>
 
-      <div className="pt-2">
-        <Button
-          type="submit"
-          disabled={!stripe || isProcessing || disabled}
-          className="w-full"
-        >
-          {isProcessing ? 'Processing...' : 'Pay $149.00'}
-        </Button>
-      </div>
+      <Button
+        type="submit"
+        disabled={!stripe || isProcessing || disabled || !cardComplete}
+        className="px-2"
+      >
+        {isProcessing ? '[processing...]' : '[pay $149.00]'}
+      </Button>
     </form>
   )
 }

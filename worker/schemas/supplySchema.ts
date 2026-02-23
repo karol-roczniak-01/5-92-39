@@ -16,7 +16,7 @@ export const userIdSchema = z.uuid('Invalid user ID')
 export const supplyContentSchema = z
   .string()
   .min(30, 'Supply description must be at least 30 characters')
-  .max(1000, 'Supply description is too long')
+  .max(300, 'Supply description is too long')
   .trim()
   .transform(sanitizeInput)
 

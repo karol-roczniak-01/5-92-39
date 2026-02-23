@@ -8,7 +8,7 @@ import type {
   Demand,
   RateLimitInfo,
   SearchResponse,
-} from '@/utils/types'
+} from '@/types'
 
 // ===== API FUNCTIONS ======
 

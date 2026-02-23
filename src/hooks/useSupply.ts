@@ -7,7 +7,7 @@ import type {
   CreateSupplyInput,
   DemandWithSupplyDetails,
   Supply,
-} from '@/utils/types'
+} from '@/types'
 
 // ===== API FUNCTIONS ======
 

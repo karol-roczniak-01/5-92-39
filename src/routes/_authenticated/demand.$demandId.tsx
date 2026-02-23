@@ -3,28 +3,22 @@ import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
-import { Mail, Phone } from 'lucide-react'
-import { supplyByDemandIdQueryOptions, useCreateSupply  } from '@/hooks/useSupply'
-import Layout from '@/components/Layout'
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/Card'
+import { supplyByDemandIdQueryOptions, useCreateSupply } from '@/hooks/useSupply'
 import { Input } from '@/components/Input'
 import { Textarea } from '@/components/Textarea'
 import { Button } from '@/components/Button'
 import Loader from '@/components/Loader'
 import { demandByIdQueryOptions } from '@/hooks/useDemand'
 import { PaymentForm } from '@/components/PaymentForm'
-import Dialog from '@/components/Dialog'
+import Page from '@/components/Page'
 
-// Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 export const Route = createFileRoute('/_authenticated/demand/$demandId')({
   pendingComponent: () => <Loader />,
   loader: ({ context: { queryClient, auth }, params: { demandId } }) => {
     return Promise.all([
-      queryClient.ensureQueryData(
-        demandByIdQueryOptions(demandId, auth.user?.id),
-      ),
+      queryClient.ensureQueryData(demandByIdQueryOptions(demandId, auth.user?.id)),
       queryClient.ensureQueryData(supplyByDemandIdQueryOptions(demandId)),
     ])
   },
@@ -35,45 +29,34 @@ function RouteComponent() {
   const queryClient = useQueryClient()
   const { auth } = Route.useRouteContext()
   const { demandId } = Route.useParams()
-  const { data: demandData } = useSuspenseQuery(
-    demandByIdQueryOptions(demandId, auth.user?.id),
-  )
-  const { data: supply } = useSuspenseQuery(
-    supplyByDemandIdQueryOptions(demandId),
-  )
+  const { data: demandData } = useSuspenseQuery(demandByIdQueryOptions(demandId, auth.user?.id))
+  const { data: supply } = useSuspenseQuery(supplyByDemandIdQueryOptions(demandId))
 
   const demand = demandData.demand
   const hasApplied = demandData.hasApplied
 
-  // Calculate if expired on frontend
   const currentTime = Math.floor(Date.now() / 1000)
   const isExpired = currentTime > demand.endingAt
+  const secondsLeft = demand.endingAt - currentTime
+  const daysLeft = Math.ceil(secondsLeft / 86400)
+  const createdDate = new Date(demand.createdAt * 1000)
 
+  const [view, setView] = useState<'details' | 'supply' | 'apply' | 'payment'>('details')
   const [content, setContent] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
-  const [showPayment, setShowPayment] = useState(false)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
-  const [_paymentIntentId, setPaymentIntentId] = useState<string | null>(null)
   const [isCreatingIntent, setIsCreatingIntent] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
-  const [view, setView] = useState<'details' | 'supply'>('details')
-  const [showApplyDialog, setShowApplyDialog] = useState(false)
 
   const trimmedContent = content.trim()
   const trimmedEmail = email.trim()
-  const isValidContent =
-    trimmedContent.length >= 30 && trimmedContent.length <= 1000
+  const isValidContent = trimmedContent.length >= 30 && trimmedContent.length <= 300
 
   const { mutate: createSupply, isPending, error } = useCreateSupply()
 
-  // Calculate days left
-  const secondsLeft = demand.endingAt - currentTime
-  const daysLeft = Math.ceil(secondsLeft / 86400)
-
   const handleInitiatePayment = async () => {
-    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id)
-      return
+    if (!trimmedContent || !trimmedEmail || !isValidContent || !auth.user?.id) return
 
     setIsCreatingIntent(true)
     setPaymentError(null)
@@ -82,35 +65,25 @@ function RouteComponent() {
       const response = await fetch('/api/payment/create-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          demandId: demandId,
-          userId: auth.user.id,
-        }),
+        body: JSON.stringify({ demandId, userId: auth.user.id }),
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to initiate payment')
-      }
+      if (!response.ok) throw new Error('Failed to initiate payment')
 
       const data = await response.json()
       setClientSecret(data.clientSecret)
-      setShowPayment(true)
+      setView('payment')
     } catch (err) {
-      setPaymentError(
-        err instanceof Error ? err.message : 'Failed to initiate payment',
-      )
+      setPaymentError(err instanceof Error ? err.message : 'Failed to initiate payment')
     } finally {
       setIsCreatingIntent(false)
     }
   }
 
   const handlePaymentSuccess = (paymentId: string) => {
-    setPaymentIntentId(paymentId)
-
-    // Submit supply with payment
     createSupply(
       {
-        demandId: demandId,
+        demandId,
         content: trimmedContent,
         email: trimmedEmail,
         phone: phone.trim() || undefined,
@@ -119,267 +92,181 @@ function RouteComponent() {
       },
       {
         onSuccess: () => {
-          // Invalidate the correct query with matching key structure
-          queryClient.invalidateQueries({
-            queryKey: ['demand', 'by-id', demandId, auth.user?.id],
-          })
-
-          // Also invalidate supply query
-          queryClient.invalidateQueries({
-            queryKey: ['supply', 'by-demand', demandId],
-          })
+          queryClient.invalidateQueries({ queryKey: ['demand', 'by-id', demandId, auth.user?.id] })
+          queryClient.invalidateQueries({ queryKey: ['supply', 'by-demand', demandId] })
           setContent('')
           setEmail('')
           setPhone('')
-          setShowPayment(false)
           setClientSecret(null)
-          setPaymentIntentId(null)
           setView('details')
-          setShowApplyDialog(false)
         },
       },
     )
   }
 
-  const handlePaymentError = (error: string) => {
-    setPaymentError(error)
-  }
-
   return (
-    <Layout>
-      <Card className="h-full md:w-lg">
-        <CardHeader className="justify-between flex items-center w-full">
-          <span>#{demand.id.slice(0, 8)}</span>
-          <div className="flex items-center gap-2">
+    <Page>
+      {view === 'details' && (
+        <div className="flex flex-col gap-2">
+          <div className="flex">
             <span>
-              {new Date(demand.createdAt * 1000).toLocaleDateString()},
+              [{createdDate.getDate()} {createdDate.toLocaleString('default', { month: 'short' })} {createdDate.getFullYear()}]
             </span>
-            {isExpired ? (
-              <span className="text-primary/70">Expired</span>
-            ) : (
-              <span className="">
-                {daysLeft > 0
-                  ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`
-                  : 'Expires today'}
-              </span>
-            )}
+            <span>
+              {isExpired ? '[expired]' : `[${daysLeft} day${daysLeft !== 1 ? 's' : ''} left]`}
+            </span>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          {view === 'details' ? (
-            <div>
-              <p className="p-2 whitespace-pre-wrap">{demand.content}</p>
-
-              {/* Show contact info only if user has applied */}
-              {hasApplied && (
-                <div className="p-2 border-primary border-t space-y-1">
-                  <p className="text-sm font-medium">Contact Information</p>
-                  <p className="text-xs text-primary/70">
-                    Visible because you applied
-                  </p>
-                  {demand.email && (
-                    <div className="flex gap-1 items-center text-sm">
-                      <Mail size={14} />
-                      <a
-                        href={`mailto:${demand.email}`}
-                        className="hover:underline"
-                      >
-                        {demand.email}
-                      </a>
-                    </div>
-                  )}
-                  {demand.phone && (
-                    <div className="flex gap-1 items-center text-sm">
-                      <Phone size={14} />
-                      <a
-                        href={`tel:${demand.phone}`}
-                        className="hover:underline"
-                      >
-                        {demand.phone}
-                      </a>
-                    </div>
-                  )}
+          <p className="opacity-70 whitespace-pre-wrap">
+            {demand.content}
+          </p>
+          {hasApplied && (
+            <>
+              {demand.email && (
+                <div className="flex items-center gap-2">
+                  <span>[email]</span>
+                  <p className="opacity-70">{demand.email}</p>
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="space-y-2 p-2">
-              {supply && supply.length > 0 ? (
-                supply.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`border border-primary p-2 space-y-2 ${
-                      item.userId === auth.user?.id ? 'border' : ''
-                    }`}
-                  >
-                    <div className="w-full flex justify-between text-sm">
-                      <p>#{item.id.slice(0, 8)}</p>
-                      <p>
-                        {new Date(item.createdAt * 1000).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <p className="whitespace-pre-wrap">{item.content}</p>
-                    <div
-                      className={`text-sm flex gap-2 flex-wrap ${
-                        item.userId === auth.user?.id
-                          ? 'opacity-90'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      <div className="flex gap-1 items-center">
-                        <Mail size={14} />
-                        {item.email}
-                      </div>
-                      {item.phone && (
-                        <div className="flex gap-1 items-center">
-                          <Phone size={14} />
-                          {item.phone}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-primary/70">No supply offers yet</p>
+              {demand.phone && (
+                <div className="flex items-center gap-2">
+                  <span>[phone]</span>
+                  <p className="opacity-70">{demand.phone}</p>
+                </div>
               )}
-            </div>
+            </>
           )}
-        </CardContent>
-        <CardFooter className="gap-2 flex flex-col">
-          <div className="w-full flex gap-2 items-center">
-            <Button
-              className="w-full"
-              onClick={() => setView('details')}
-              disabled={view === 'details'}
-            >
-              Details
-            </Button>
-            <Button
-              className="w-full"
-              onClick={() => setView('supply')}
-              disabled={view === 'supply'}
-            >
-              Supply ({supply?.length || 0})
-            </Button>
-          </div>
-          <Button
-            className="w-full"
-            onClick={() => setShowApplyDialog(true)}
-            disabled={hasApplied || isExpired}
-          >
-            {hasApplied ? 'Already Applied' : isExpired ? 'Expired' : 'Apply'}
-          </Button>
-        </CardFooter>
-      </Card>
+        </div>
+      )}
 
-      {/* Apply to Demand Dialog */}
-      <Dialog
-        isOpen={showApplyDialog}
-        onClose={() => {
-          setShowApplyDialog(false)
-          setShowPayment(false)
-          setClientSecret(null)
-          setPaymentError(null)
-        }}
-      >
-        {!showPayment ? (
-          <Card className="bg-background md:w-md w-full h-1/3">
-            <CardHeader>
-              <p>Apply for: $149.00</p>
-              <p className="text-sm opacity-70">
-                After your application is approved, you&apos;ll receive the
-                buyer&apos;s contact details to discuss the deal directly
-              </p>
-            </CardHeader>
-            <CardContent className="">
-              <Textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Explain how you can fulfill this requirement..."
-                className="resize-none"
-                rows={4}
-                disabled={isPending || isCreatingIntent}
-              />
-              <p className="text-xs text-muted-foreground">
-                {content.trim().length}/500 characters (minimum 30)
-              </p>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  disabled={isPending || isCreatingIntent}
-                />
-                <Input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+48 123 456 789 (optional)"
-                  disabled={isPending || isCreatingIntent}
-                />
+      {view === 'supply' && (
+        <div className="space-y-4">
+          {supply && supply.length > 0 ? (
+            supply.map((item, index) => (
+              <div key={item.id}>
+                <div className="flex items-center">
+                  <span>[{index + 1}]</span>
+                  <span className="opacity-70">
+                    [{new Date(item.createdAt * 1000).toLocaleDateString()}]
+                  </span>
+                  {item.userId === auth.user?.id && <span>[you]</span>}
+                </div>
+                <p className="flex wrap truncate opacity-70">{item.content}</p>
+                <div className="flex gap-2">
+                  <span>[{item.email}]</span>
+                  {item.phone && <span>[{item.phone}]</span>}
+                </div>
               </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                onClick={handleInitiatePayment}
-                disabled={
-                  isPending ||
-                  isCreatingIntent ||
-                  !trimmedContent ||
-                  !trimmedEmail ||
-                  !isValidContent ||
-                  !auth.user?.id
-                }
-                className="w-full"
-              >
-                {isCreatingIntent ? 'Preparing...' : 'Continue to Payment'}
-              </Button>
-            </CardFooter>
-          </Card>
-        ) : (
-          <>
-            {clientSecret && (
-              <Card className="bg-background md:w-md">
-                <CardContent>
-                  <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <PaymentForm
-                      clientSecret={clientSecret}
-                      onSuccess={handlePaymentSuccess}
-                      onError={handlePaymentError}
-                      disabled={isPending}
-                    />
-                  </Elements>
-                  {paymentError && (
-                    <p className="text-primary/70 text-sm">{paymentError}</p>
-                  )}
+            ))
+          ) : (
+            <p className="opacity-70">no supply offers yet</p>
+          )}
+        </div>
+      )}
 
-                  {error && (
-                    <p className="text-primary/70 text-sm">
-                      {error instanceof Error
-                        ? error.message
-                        : 'Failed to submit supply'}
-                    </p>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={() => {
-                      setShowPayment(false)
-                      setClientSecret(null)
-                      setPaymentError(null)
-                    }}
-                    disabled={isPending}
-                    className="w-full"
-                  >
-                    Back
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
-          </>
+      {view === 'apply' && (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <span>[apply]</span>
+            <span>$149.00</span>
+          </div>
+
+          <div className="flex gap-2 items-start">
+            <div className="flex flex-col shrink-0">
+              <label>[note]</label>
+              <span className="opacity-70">{trimmedContent.length}/300</span>
+              <span className="opacity-70">min 30</span>
+            </div>
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="how you'd fulfill this demand, or leave a note..."
+              className="resize-none"
+              rows={6}
+              disabled={isPending || isCreatingIntent}
+            />
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <label className="shrink-0">[email]</label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              disabled={isPending || isCreatingIntent}
+            />
+          </div>
+
+          <div className="flex gap-2 items-center">
+            <label className="shrink-0">[phone]</label>
+            <Input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+48 123 456 789 (optional)"
+              disabled={isPending || isCreatingIntent}
+            />
+          </div>
+
+          {paymentError && <p className="text-sm opacity-70">! {paymentError}</p>}
+
+          <Button
+            className="px-2"
+            onClick={handleInitiatePayment}
+            disabled={isPending || isCreatingIntent || !trimmedContent || !trimmedEmail || !isValidContent}
+          >
+            {isCreatingIntent ? '[preparing...]' : 'continue to payment'}
+          </Button>
+        </div>
+      )}
+
+      {view === 'payment' && clientSecret && (
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <span>[payment]</span>
+            <span className="opacity-70">$149.00</span>
+          </div>
+          <Elements stripe={stripePromise} options={{ clientSecret }}>
+            <PaymentForm
+              clientSecret={clientSecret}
+              onSuccess={handlePaymentSuccess}
+              onError={(err) => setPaymentError(err)}
+              disabled={isPending}
+            />
+          </Elements>
+          {paymentError && <p className="text-sm opacity-70">! {paymentError}</p>}
+          {error && (
+            <p className="text-sm opacity-70">
+              {error instanceof Error ? error.message : 'failed to submit supply'}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="flex gap-2 items-center flex-wrap">
+        <Button
+          className={`px-2 ${view === 'details' ? 'bg-primary text-background' : ''}`}
+          onClick={() => setView('details')}
+        >
+          Details
+        </Button>
+        <Button
+          className={`px-2 ${view === 'supply' ? 'bg-primary text-background' : ''}`}
+          onClick={() => setView('supply')}
+        >
+          Suppliers ({supply?.length || 0})
+        </Button>
+        {!hasApplied && !isExpired && (
+          <Button
+            className={`px-2 ${(view === 'apply' || view === 'payment') ? 'bg-primary text-background' : ''}`}
+            onClick={() => setView('apply')}
+          >
+            Apply
+          </Button>
         )}
-      </Dialog>
-    </Layout>
+        {hasApplied && <span className="px-2 opacity-50">Applied</span>}
+        {isExpired && <span className="px-2 opacity-50">Expired</span>}
+      </div>
+    </Page>
   )
 }

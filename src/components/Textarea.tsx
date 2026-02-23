@@ -8,7 +8,7 @@ function Textarea({ className, ...props }: TextareaProps) {
     <textarea
       data-slot="textarea"
       className={twMerge(
-        'border h-full border-primary w-full p-2 outline-none',
+        'h-full w-full outline-none',
         className,
       )}
       {...props}

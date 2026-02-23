@@ -1,5 +1,5 @@
 import { twMerge } from 'tailwind-merge'
-import type { ReactNode, SyntheticEvent } from 'react'
+import type { ReactNode } from 'react'
 
 interface CardHeaderProps {
   children: ReactNode
@@ -15,7 +15,7 @@ interface CardProps {
   children: ReactNode
   className?: string
   asForm?: boolean
-  onSubmit?: (e: SyntheticEvent<HTMLFormElement>) => void
+  onSubmit?: (e: React.SyntheticEvent<HTMLFormElement>) => void
 }
 
 interface CardFooterProps {
@@ -25,7 +25,7 @@ interface CardFooterProps {
 
 const Card = ({ children, className, asForm = false, onSubmit }: CardProps) => {
   const baseClassName = twMerge(
-    'md:w-sm w-full h-fit max-h-full flex flex-col border-primary border',
+    'md:w-sm w-full h-fit max-h-full flex flex-col border-primary/30 border-4 border-double',
     className,
   )
 
@@ -42,7 +42,7 @@ const Card = ({ children, className, asForm = false, onSubmit }: CardProps) => {
 
 const CardHeader = ({ children, className }: CardHeaderProps) => {
   return (
-    <div className={twMerge('shrink-0 p-2 border-b border-primary', className)}>
+    <div className={twMerge('shrink-0 p-2 border-b border-primary/30', className)}>
       {children}
     </div>
   )
@@ -58,7 +58,7 @@ const CardContent = ({ children, className }: CardContentProps) => {
 
 const CardFooter = ({ children, className }: CardFooterProps) => {
   return (
-    <div className={twMerge('shrink-0 p-2 border-t border-primary', className)}>
+    <div className={twMerge('shrink-0 p-2 border-t border-primary/30', className)}>
       {children}
     </div>
   )
