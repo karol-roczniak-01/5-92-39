@@ -24,7 +24,7 @@ function RouteComponent() {
   const authorizedOptions = [
     { label: 'New Demand', onSelect: () => navigate({ to: '/new-demand' }) },
     { label: 'My Demands', onSelect: () => navigate({ to: '/my-demands' }) },
-    { label: 'Find a Match', onSelect: () => navigate({ to: '/find-a-match' }) },
+    { label: 'Find Opportunity', onSelect: () => navigate({ to: '/find-opportunity' }) },
     { label: 'Applied', onSelect: () => navigate({ to: '/applied' }) },
     { label: 'Log Out', onSelect: handleLogout },
   ]
@@ -40,14 +40,14 @@ function RouteComponent() {
 
   if (auth.user) {
     return (
-      <Page header='Welcome to 5-92-39! It is a private tender platform for matching supply with demand'>
+      <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers'>
         <Menu options={authorizedOptions}/>
       </Page>
     )
   }
 
   return (
-    <Page header='Welcome to 5-92-39! It is a private tender platform for matching supply with demand'>
+    <Page header='Welcome to 5-92-39! — AI-powered tender platform connecting suppliers with buyers'>
       <Menu options={unauthorizedOptions}/>
     </Page>
   )

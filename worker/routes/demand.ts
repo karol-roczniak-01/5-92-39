@@ -157,6 +157,17 @@ demand.post('/api/demand', async (c) => {
       return c.json({ error: 'User not found' }, 404)
     }
 
+    // After verifyUserExists, before generating embedding
+    const activeDemandsCount = await c.env.DB.prepare(
+      'SELECT COUNT(*) as count FROM demand WHERE userId = ? AND endingAt > ?'
+    )
+      .bind(validatedInput.userId, Math.floor(Date.now() / 1000))
+      .first<{ count: number }>()
+
+    if (activeDemandsCount && activeDemandsCount.count >= 50) {
+      return c.json({ error: 'Active demand limit reached (50)' }, 400)
+    }
+
     // Generate UUID for the demand
     const id = uuidv4()
 
@@ -298,7 +309,7 @@ demand.get('/api/demand/search', async (c) => {
 
     // Search in Vectorize
     const results = await c.env.VECTORIZE.query(queryEmbedding, {
-      topK: 10,
+      topK: 50,
       returnMetadata: 'all',
     })
 

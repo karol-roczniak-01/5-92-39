@@ -17,7 +17,7 @@ const Page: React.FC<PageProps> = ({
       'w-full h-full flex flex-col items-center overflow-y-auto p-2',
       className,
     )}>
-      <div className='w-full md:w-xl flex flex-col gap-4'>
+      <div className='w-full md:w-2xl flex flex-col gap-4'>
         {header && (
           <p className='border-b-4 border-double pb-2'>
             {header}

@@ -22,7 +22,7 @@ function RouteComponent() {
   )
 
   return (
-    <Page header={`My Demands (${demands.length})`}>
+    <Page header={`Your posted demands (${demands.length}). Open one to check if anyone applied `}>
       <div className="space-y-4">
         {demands.length === 0 ? (
           <p className="opacity-70">no demands yet</p>

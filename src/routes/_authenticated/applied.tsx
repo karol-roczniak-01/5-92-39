@@ -24,7 +24,7 @@ function RouteComponent() {
   )
 
   return (
-    <Page header={`Applied (${appliedDemands.length})`}>
+    <Page header={`Your applications (${appliedDemands.length}). Open any to view contact details and move forward`}>
       <div className="space-y-4">
         {appliedDemands.length === 0 ? (
           <p className="opacity-70">no applications yet</p>

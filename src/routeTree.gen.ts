@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedNewDemandRouteImport } from './routes/_authenticated/new-demand'
 import { Route as AuthenticatedMyDemandsRouteImport } from './routes/_authenticated/my-demands'
-import { Route as AuthenticatedFindAMatchRouteImport } from './routes/_authenticated/find-a-match'
+import { Route as AuthenticatedFindOpportunityRouteImport } from './routes/_authenticated/find-opportunity'
 import { Route as AuthenticatedAppliedRouteImport } from './routes/_authenticated/applied'
 import { Route as AuthenticatedDemandDemandIdRouteImport } from './routes/_authenticated/demand.$demandId'
 
@@ -42,11 +42,12 @@ const AuthenticatedMyDemandsRoute = AuthenticatedMyDemandsRouteImport.update({
   path: '/my-demands',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedFindAMatchRoute = AuthenticatedFindAMatchRouteImport.update({
-  id: '/find-a-match',
-  path: '/find-a-match',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
+const AuthenticatedFindOpportunityRoute =
+  AuthenticatedFindOpportunityRouteImport.update({
+    id: '/find-opportunity',
+    path: '/find-opportunity',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAppliedRoute = AuthenticatedAppliedRouteImport.update({
   id: '/applied',
   path: '/applied',
@@ -63,7 +64,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/applied': typeof AuthenticatedAppliedRoute
-  '/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/find-opportunity': typeof AuthenticatedFindOpportunityRoute
   '/my-demands': typeof AuthenticatedMyDemandsRoute
   '/new-demand': typeof AuthenticatedNewDemandRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -72,7 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/applied': typeof AuthenticatedAppliedRoute
-  '/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/find-opportunity': typeof AuthenticatedFindOpportunityRoute
   '/my-demands': typeof AuthenticatedMyDemandsRoute
   '/new-demand': typeof AuthenticatedNewDemandRoute
   '/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -83,7 +84,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/applied': typeof AuthenticatedAppliedRoute
-  '/_authenticated/find-a-match': typeof AuthenticatedFindAMatchRoute
+  '/_authenticated/find-opportunity': typeof AuthenticatedFindOpportunityRoute
   '/_authenticated/my-demands': typeof AuthenticatedMyDemandsRoute
   '/_authenticated/new-demand': typeof AuthenticatedNewDemandRoute
   '/_authenticated/demand/$demandId': typeof AuthenticatedDemandDemandIdRoute
@@ -94,7 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/applied'
-    | '/find-a-match'
+    | '/find-opportunity'
     | '/my-demands'
     | '/new-demand'
     | '/demand/$demandId'
@@ -103,7 +104,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/applied'
-    | '/find-a-match'
+    | '/find-opportunity'
     | '/my-demands'
     | '/new-demand'
     | '/demand/$demandId'
@@ -113,7 +114,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/login'
     | '/_authenticated/applied'
-    | '/_authenticated/find-a-match'
+    | '/_authenticated/find-opportunity'
     | '/_authenticated/my-demands'
     | '/_authenticated/new-demand'
     | '/_authenticated/demand/$demandId'
@@ -162,11 +163,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMyDemandsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/find-a-match': {
-      id: '/_authenticated/find-a-match'
-      path: '/find-a-match'
-      fullPath: '/find-a-match'
-      preLoaderRoute: typeof AuthenticatedFindAMatchRouteImport
+    '/_authenticated/find-opportunity': {
+      id: '/_authenticated/find-opportunity'
+      path: '/find-opportunity'
+      fullPath: '/find-opportunity'
+      preLoaderRoute: typeof AuthenticatedFindOpportunityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/applied': {
@@ -188,7 +189,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAppliedRoute: typeof AuthenticatedAppliedRoute
-  AuthenticatedFindAMatchRoute: typeof AuthenticatedFindAMatchRoute
+  AuthenticatedFindOpportunityRoute: typeof AuthenticatedFindOpportunityRoute
   AuthenticatedMyDemandsRoute: typeof AuthenticatedMyDemandsRoute
   AuthenticatedNewDemandRoute: typeof AuthenticatedNewDemandRoute
   AuthenticatedDemandDemandIdRoute: typeof AuthenticatedDemandDemandIdRoute
@@ -196,7 +197,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAppliedRoute: AuthenticatedAppliedRoute,
-  AuthenticatedFindAMatchRoute: AuthenticatedFindAMatchRoute,
+  AuthenticatedFindOpportunityRoute: AuthenticatedFindOpportunityRoute,
   AuthenticatedMyDemandsRoute: AuthenticatedMyDemandsRoute,
   AuthenticatedNewDemandRoute: AuthenticatedNewDemandRoute,
   AuthenticatedDemandDemandIdRoute: AuthenticatedDemandDemandIdRoute,

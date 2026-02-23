@@ -105,7 +105,7 @@ function RouteComponent() {
   }
 
   return (
-    <Page>
+    <Page header={`Demand #${demand.id}`}>
       {view === 'details' && (
         <div className="flex flex-col gap-2">
           <div className="flex">
@@ -166,44 +166,51 @@ function RouteComponent() {
       {view === 'apply' && (
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
-            <span>[apply]</span>
+            <span>[Apply]</span>
             <span>$149.00</span>
           </div>
 
-          <div className="flex gap-2 items-start">
-            <div className="flex flex-col shrink-0">
-              <label>[note]</label>
-              <span className="opacity-70">{trimmedContent.length}/300</span>
-              <span className="opacity-70">min 30</span>
+          {/* Note */}
+          <div className="flex flex-col">
+            <div className="grid grid-cols-6 gap-2 items-start">
+              <div className="col-span-2 flex flex-col">
+                <label className="truncate">[Note]</label>
+                <span className="opacity-70">{trimmedContent.length}/300</span>
+                <span className="opacity-70">min 30</span>
+              </div>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="how you'd fulfill this demand, or leave a note..."
+                rows={6}
+                className="col-span-4"
+                disabled={isPending || isCreatingIntent}
+              />
             </div>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="how you'd fulfill this demand, or leave a note..."
-              className="resize-none"
-              rows={6}
-              disabled={isPending || isCreatingIntent}
-            />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <label className="shrink-0">[email]</label>
+          {/* Email */}
+          <div className="grid grid-cols-6 gap-2 items-center">
+            <label className="col-span-2 truncate">[Email]</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
+              className="col-span-4"
               disabled={isPending || isCreatingIntent}
             />
           </div>
 
-          <div className="flex gap-2 items-center">
-            <label className="shrink-0">[phone]</label>
+          {/* Phone */}
+          <div className="grid grid-cols-6 gap-2 items-center">
+            <label className="col-span-2 truncate">[Phone]</label>
             <Input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+48 123 456 789 (optional)"
+              className="col-span-4"
               disabled={isPending || isCreatingIntent}
             />
           </div>

@@ -15,7 +15,7 @@ const searchSchema = z.object({
 
 const STORAGE_KEY = 'supplySearchQuery'
 
-export const Route = createFileRoute('/_authenticated/find-a-match')({
+export const Route = createFileRoute('/_authenticated/find-opportunity')({
   pendingComponent: () => <Loader />,
   validateSearch: searchSchema,
   component: RouteComponent,
@@ -112,16 +112,28 @@ function RouteComponent() {
   const isLimitReached = currentRateLimit.remaining === 0
 
   return (
-    <Page header='What does your company offer? Be specific to improve your matches. (30–500 characters)'>    
+    <Page header='Describe what your company offers — be specific to get better matches (30–500 characters)'>    
       <Textarea
         autoFocus
         placeholder="I'm an authorized distributor of refurbished Siemens & GE 1.5T MRS systems for outpatient facilities. Inventory includes musculoskeletal imaging packages All units FDA-cleared with warranty."
         value={searchInput}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        rows={4}
+        rows={3}
         className="resize-none shrink-0"
       />
+      <Button
+        onClick={handleSearch}
+        disabled={!isValidSearch || isLoading || isFetching || isLimitReached}
+        className="w-full shrink-0"
+      >
+        {isLoading || isFetching
+          ? 'Searching...'
+          : isLimitReached
+            ? 'Daily limit reached'
+            : `Search — ${currentRateLimit.remaining} left today`}
+      </Button>
+
       <div className=' flex'>
         {(isLoading || isFetching) && urlSearchQuery.length >= 30 ? (
           <div className="h-full w-full flex items-center justify-center">
@@ -159,22 +171,6 @@ function RouteComponent() {
           <p>No matching demands found</p>
         )}
       </div>
-      <Button
-        onClick={handleSearch}
-        disabled={
-          !isValidSearch || isLoading || isFetching || isLimitReached
-        }
-        className="w-full shrink-0"
-      >
-        {isLoading || isFetching
-          ? 'Searching...'
-          : isLimitReached
-            ? 'Daily limit reached'
-            : 'Search'}
-      </Button>
-      <p className='opacity-70'>
-        {currentRateLimit.remaining}/{currentRateLimit.total} searches remaining today 
-      </p>
     </Page>
   )
 }

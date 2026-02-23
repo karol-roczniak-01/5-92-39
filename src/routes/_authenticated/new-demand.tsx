@@ -1,11 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useForm } from '@tanstack/react-form'
 import { Button } from '@/components/Button'
-import { Input } from '@/components/Input'
-import { Textarea } from '@/components/Textarea'
 import { useCreateDemand } from '@/hooks/useDemand'
 import Page from '@/components/Page'
 import { useState } from 'react'
+import FormInput from '@/components/FormInput'
 
 export const Route = createFileRoute('/_authenticated/new-demand')({
   component: RouteComponent,
@@ -45,7 +44,7 @@ function RouteComponent() {
   })
 
   return (
-    <Page header="New Demand">
+    <Page header="Describe the product or service you're looking for — be specific so suppliers can find you">
       {apiError && <p>{apiError}</p>}
       <form
         onSubmit={(e) => {
@@ -53,6 +52,7 @@ function RouteComponent() {
           e.stopPropagation()
           form.handleSubmit()
         }}
+        noValidate
         className="flex flex-col gap-2"
       >
         {/* Content */}
@@ -69,29 +69,16 @@ function RouteComponent() {
           }}
         >
           {(field) => (
-            <div className="flex flex-col">
-              <div className="flex gap-2 items-start">
-                <div className='flex flex-col'>
-                  <label>[Description]</label>
-                  <span className='opacity-70'>{field.state.value.trim().length}/1000</span>
-                  <span className='opacity-70'>min 50</span>
-                </div>
-                <Textarea
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Outpatient imaging center seeking refurbished or new 1.5T MRI system..."
-                  rows={5}
-                  className="resize-none"
-                  disabled={isPending}
-                />
-              </div>
-              {field.state.meta.errors.length > 0 && (
-                <p className="opacity-70">! {field.state.meta.errors[0]}</p>
-              )}
-            </div>
+            <FormInput
+              field={field}
+              label="Description"
+              textarea
+              rows={5}
+              counter={1000}
+              hint="min 50"
+              placeholder="Outpatient imaging center seeking refurbished or new 1.5T MRI system..."
+              disabled={isPending}
+            />
           )}
         </form.Field>
 
@@ -107,44 +94,29 @@ function RouteComponent() {
           }}
         >
           {(field) => (
-            <div className="flex flex-col">
-              <div className="flex gap-2 items-center">
-                <label>[Email]</label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  autoComplete="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="your@email.com"
-                  disabled={isPending}
-                />
-              </div>
-              {field.state.meta.errors.length > 0 && (
-                <p className="opacity-70">! {field.state.meta.errors[0]}</p>
-              )}
-            </div>
+            <FormInput
+              field={field}
+              label="Email"
+              type="email"
+              autoComplete="email"
+              placeholder="your@email.com"
+              disabled={isPending}
+            />
           )}
         </form.Field>
 
         {/* Phone */}
-        <form.Field name="phone">
+        <form.Field 
+          name="phone"
+        >
           {(field) => (
-            <div className="flex gap-2 items-center">
-              <label>[Phone]</label>
-              <Input
-                id={field.name}
-                name={field.name}
-                type="tel"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="+48 123 456 789 (optional)"
-                disabled={isPending}
-              />
-            </div>
+            <FormInput
+              field={field}
+              label="Phone"
+              type="tel"
+              placeholder="+48 123 456 789 (optional)"
+              disabled={isPending}
+            />
           )}
         </form.Field>
 
@@ -153,52 +125,39 @@ function RouteComponent() {
           name="days"
           validators={{
             onSubmit: ({ value }) => {
-              const n = parseInt(value) || 0
-              if (n < 1 || n > 180) return 'Enter between 1 and 180 days'
+              const n = parseInt(value)
+              if (isNaN(n) || n < 7 || n > 180) return 'Enter between 7 and 180 days'
               return undefined
             },
           }}
         >
           {(field) => (
-            <div className="flex flex-col">
-              <div className="flex gap-2 items-start">
-                <div className='flex flex-col'>
-                  <label>[Duration]</label>
-                  <span className='opacity-70'>max 180</span>
-                </div>
-                <div className='flex items-center'>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="number"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    placeholder="Duration in days"
-                    min="1"
-                    max="180"
-                    className='w-11'
-                    disabled={isPending}
-                  />
-                  <p>days</p>
-                </div>
-              </div>
-              {field.state.meta.errors.length > 0 && (
-                <p className="opacity-70">! {field.state.meta.errors[0]}</p>
-              )}
-            </div>
+            <FormInput
+              field={field}
+              label="Days"
+              type="number"
+              placeholder="30"
+              hint="max 180"
+              suffix="days"
+              min="7"
+              max="180"
+              className="w-10"
+              disabled={isPending}
+            />
           )}
         </form.Field>
 
-        <div className="flex pt-2">
-          <form.Subscribe selector={(state) => state.isSubmitting}>
-            {(isSubmitting) => (
-              <Button type="submit" disabled={isSubmitting || isPending} className="w-full">
-                {isSubmitting || isPending ? 'Creating...' : 'Create'}
-              </Button>
-            )}
-          </form.Subscribe>
-        </div>
+        <form.Subscribe selector={(state) => state.isSubmitting}>
+          {(isSubmitting) => (
+            <Button type="submit" disabled={isSubmitting || isPending || apiError === 'Active demand limit reached (50)'} className="w-full">
+              {isSubmitting || isPending
+                ? 'Creating...'
+                : apiError === 'Active demand limit reached (50)'
+                  ? 'Limit of 50 demands reached'
+                  : 'Create'}
+            </Button>
+          )}
+        </form.Subscribe>
       </form>
     </Page>
   )
