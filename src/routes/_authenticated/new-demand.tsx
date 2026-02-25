@@ -76,7 +76,7 @@ function RouteComponent() {
               rows={5}
               counter={1000}
               hint="min 50"
-              placeholder="Outpatient imaging center seeking refurbished or new 1.5T MRI system..."
+              placeholder="I’m building a family home 40 km from Warsaw and need a framing crew for a 180m² single-story house. Work to start in April, budget around 40 000 PLN."
               disabled={isPending}
             />
           )}

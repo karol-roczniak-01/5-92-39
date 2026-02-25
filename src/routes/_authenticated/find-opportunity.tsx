@@ -115,7 +115,7 @@ function RouteComponent() {
     <Page header='Describe what your company offers — be specific to get better matches (30–500 characters)'>    
       <Textarea
         autoFocus
-        placeholder="I'm an authorized distributor of refurbished Siemens & GE 1.5T MRS systems for outpatient facilities. Inventory includes musculoskeletal imaging packages All units FDA-cleared with warranty."
+        placeholder="We are a framing company based in Mazowieckie, handling residential projects from 100 to 300m². Available from March onwards."
         value={searchInput}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
