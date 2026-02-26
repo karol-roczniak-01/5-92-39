@@ -27,7 +27,7 @@ function RouteComponent() {
     <Page header={`Your applications (${appliedDemands.length}). Open any to view contact details and move forward`}>
       <div className="space-y-4">
         {appliedDemands.length === 0 ? (
-          <p className="opacity-70">No Applications Yet...</p>
+          <p className="opacity-70">No applications yet...</p>
         ) : (
           appliedDemands.map((item, index) => {
             const isExpired = Date.now() / 1000 > item.endingAt

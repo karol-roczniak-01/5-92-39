@@ -159,7 +159,7 @@ function RouteComponent() {
               </div>
             ))
           ) : (
-            <p className="opacity-70">No Supply Offers Yet...</p>
+            <p className="opacity-70">No supply offers yet...</p>
           )}
         </div>
       )}
