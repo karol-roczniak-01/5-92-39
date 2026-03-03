@@ -12,8 +12,8 @@ dist
 dist-ssr
 *.local
 .env
-.wrangler
-.nitro
+.env.*
+!.env.example
 
 # Editor directories and files
 .vscode/*
