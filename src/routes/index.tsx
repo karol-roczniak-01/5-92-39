@@ -18,7 +18,7 @@ function RouteComponent() {
   }
 
   const handleJoin = () => {
-    window.location.href = 'https://5395.19188103.com/join'
+    window.location.href = 'https://5395.19188103.com/create-account'
   }
 
   const authorizedOptions = [

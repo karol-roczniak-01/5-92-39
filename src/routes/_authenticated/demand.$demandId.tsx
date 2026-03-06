@@ -31,10 +31,8 @@ function RouteComponent() {
   const demand = demandData.demand
   const hasApplied = demandData.hasApplied
 
-  const currentTime = Math.floor(Date.now() / 1000)
-  const isExpired = currentTime > demand.endingAt
-  const secondsLeft = demand.endingAt - currentTime
-  const daysLeft = Math.ceil(secondsLeft / 86400)
+  const isExpired = demandData.isExpired
+  const daysLeft = Math.ceil((demand.endingAt - Math.floor(Date.now() / 1000)) / 86400)
 
   const [view, setView] = useState<'details' | 'supply' | 'apply'>('details')
   const [isRedirecting, setIsRedirecting] = useState(false)

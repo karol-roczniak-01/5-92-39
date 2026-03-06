@@ -132,9 +132,17 @@ const verifyUserExists = async (userId: string, env: Env): Promise<boolean> => {
 // ============================================================================
 // HELPER: Generate Vector Embedding
 // ============================================================================
-const generateEmbedding = async (text: string, ai: Ai): Promise<Array<number>> => {
-  const response = (await ai.run('@cf/baai/bge-base-en-v1.5', {
-    text: [text],
+const generateEmbedding = async (
+  text: string,
+  ai: Ai,
+  type: 'query' | 'document' = 'document'
+): Promise<Array<number>> => {
+  const input = type === 'query'
+    ? `task: search result | query: ${text}`
+    : `title: none | text: ${text}`
+
+  const response = (await ai.run('@cf/google/embeddinggemma-300m', {
+    text: [input],
   })) as { data: Array<Array<number>> }
 
   return response.data[0]
@@ -172,7 +180,7 @@ demand.post('/api/demand', async (c) => {
     const id = uuidv4()
 
     // Generate embedding for semantic search
-    const embedding = await generateEmbedding(validatedInput.content, c.env.AI)
+    const embedding = await generateEmbedding(validatedInput.content, c.env.AI, 'document')
 
     // Calculate timestamps
     const createdAt = Math.floor(Date.now() / 1000)
@@ -213,6 +221,7 @@ demand.post('/api/demand', async (c) => {
 
     return c.json({ demand: result }, 201)
   } catch (error) {
+    console.error('ERROR', error)
     const zodError = handleZodError(error)
     if (zodError) {
       return c.json({ error: zodError.error }, zodError.status)
@@ -305,7 +314,7 @@ demand.get('/api/demand/search', async (c) => {
     }
 
     // Generate embedding for the search query
-    const queryEmbedding = await generateEmbedding(validatedQuery, c.env.AI)
+    const queryEmbedding = await generateEmbedding(validatedQuery, c.env.AI, 'query')
 
     // Search in Vectorize
     const results = await c.env.VECTORIZE.query(queryEmbedding, {
@@ -377,53 +386,54 @@ demand.get('/api/demand/search', async (c) => {
 demand.get('/api/demand/:demandId', async (c) => {
   try {
     const demandId = c.req.param('demandId')
-    const requestingUserId = c.req.query('userId') // Pass userId as query param
+    const requestingUserId = c.req.query('userId')
 
-    // Validate demand ID
     const validatedDemandId = demandIdSchema.parse(demandId)
 
-    // Query demand by ID
-    const demand = await c.env.DB.prepare('SELECT * FROM demand WHERE id = ?')
+    const demand = await c.env.DB.prepare(
+      'SELECT id, userId, content, createdAt, endingAt FROM demand WHERE id = ?'
+    )
       .bind(validatedDemandId)
-      .first<Demand>()
+      .first<Omit<Demand, 'email' | 'phone'>>()
 
     if (!demand) {
       return c.json({ error: 'Demand not found' }, 404)
     }
 
-    // Check if requesting user has applied to this demand
+    const currentTime = Math.floor(Date.now() / 1000)
+    const isExpired = currentTime > demand.endingAt
+
     let hasApplied = false
+    let contactInfo: { email: string; phone: string } | null = null
+
     if (requestingUserId) {
       const validatedUserId = userIdSchema.parse(requestingUserId)
-
-      // Verify requesting user exists in MOTHER_DB
       const userExists = await verifyUserExists(validatedUserId, c.env)
 
       if (userExists) {
         const supply = await c.env.DB.prepare(
-          'SELECT id FROM supply WHERE demandId = ? AND userId = ?',
+          'SELECT id FROM supply WHERE demandId = ? AND userId = ?'
         )
           .bind(validatedDemandId, validatedUserId)
           .first()
 
         hasApplied = !!supply
+
+        if (hasApplied) {
+          contactInfo = await c.env.DB.prepare(
+            'SELECT email, phone FROM demand WHERE id = ?'
+          )
+            .bind(validatedDemandId)
+            .first<{ email: string; phone: string }>()
+        }
       }
     }
 
-    // Check if demand is expired
-    const currentTime = Math.floor(Date.now() / 1000)
-    const isExpired = currentTime > demand.endingAt
-
-    // If user hasn't applied, remove email and phone
-    const responseDemand = hasApplied
-      ? demand
-      : {
-          ...demand,
-          email: undefined,
-          phone: undefined,
-        }
-
-    return c.json({ demand: responseDemand, hasApplied, isExpired })
+    return c.json({
+      demand: { ...demand, ...contactInfo },
+      hasApplied,
+      isExpired,
+    })
   } catch (error) {
     const zodError = handleZodError(error)
     if (zodError) {

@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "5-92-39",
-  "compatibility_date": "2026-03-05",
+  "compatibility_date": "2026-02-17",
   "compatibility_flags": ["nodejs_compat"],
   "main": "worker/index.ts",
   "observability": {
@@ -19,13 +19,13 @@
       "binding": "DB",
       "database_name": "5-92-39",
       "database_id": "fa9ab3f8-8ac1-489f-9000-40b12c07c3a9",
-      "remote": false,
+      "remote": true
     },
     {
       "binding": "MOTHER_DB",
       "database_name": "19-18-8-103",
       "database_id": "0f8637b8-bf97-4087-88b2-e2ca821efc09",
-      "remote": false,
+      "remote": true
     },
   ],
   "ai": {
@@ -34,15 +34,14 @@
   "vectorize": [
     {
       "binding": "VECTORIZE",
-      "index_name": "demands-index",
-      "remote": true,
+      "index_name": "demands-index-dev", // demands-index-dev. ALWAYS deploy demands-index to prod
+      "remote": true
     },
   ],
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT",
       "id": "25876b043d2f45acb8a12bd6c63d03e8",
-      "remote": true,
     },
   ],
 }

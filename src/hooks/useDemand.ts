@@ -52,7 +52,7 @@ export const fetchRateLimitStatus = async (
 export const fetchDemandById = async (
   demandId: string,
   userId?: string,
-): Promise<{ demand: Demand; hasApplied: boolean }> => {
+): Promise<{ demand: Demand; hasApplied: boolean; isExpired: boolean }> => {
   const url = userId
     ? `/api/demand/${demandId}?userId=${userId}`
     : `/api/demand/${demandId}`
