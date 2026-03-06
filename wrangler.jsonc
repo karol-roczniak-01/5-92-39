@@ -34,7 +34,7 @@
   "vectorize": [
     {
       "binding": "VECTORIZE",
-      "index_name": "demands-index-dev", // demands-index-dev. ALWAYS deploy demands-index to prod
+      "index_name": "demands-index", // demands-index-dev. ALWAYS deploy demands-index to prod
       "remote": true
     },
   ],
