@@ -74,7 +74,7 @@ export const texts = {
     // --- UI Labels ---
     newDemand: 'New Demand',
     myDemands: 'My Demands',
-    findMatch: 'Find Opportunity',
+    findMatch: 'Find Match',
     days: 'Days',
     note: 'Note',
     details: 'Details',
